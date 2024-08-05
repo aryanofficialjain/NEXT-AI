@@ -1,8 +1,6 @@
-import Credentials, {
-  CredentialsProvider,
-} from "next-auth/providers/credentials";
+import  CredentialsProvider  from "next-auth/providers/credentials";
 import { NextAuthOptions } from "next-auth";
-import bcrypt from "bcryptjs";
+import bcryptjs from "bcryptjs";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/models/User";
 
@@ -37,10 +35,10 @@ export const authOptions: NextAuthOptions = {
             credentials.password,
             user.password
           );
-          if(isPasswordCorrect){
-            return user
+          if (isPasswordCorrect) {
+            return user;
           } else {
-            throw new Error ("Incorrect Password")
+            throw new Error("Incorrect Password");
           }
         } catch (error: any) {
           throw new Error(error);
@@ -48,11 +46,31 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  callbacks:{
-    
+  callbacks: {
+    async jwt ({token, user}){
+
+      if(user){
+        token._id = user._id?.toString();
+        token.isAcceptingMessages = user.isAcceptingMessages;
+        token.isVerified = user.isVerified;
+        token.username = user.username;
+
+      }
+      return token
+    }, 
+     async session ({token, session}){
+      if(token){
+        session.user._id = token._id?.toString();
+        session.user.isAcceptingMessages = token.isAcceptingMessages || false;
+        session.user.username = token.username || "";
+        session.user.isVerified = token.isVerified;
+
+      }
+      return session
+     }
   },
-  pages:{
-    signIn: '/signin',
+  pages: {
+    signIn: "/signin",
   },
   session: {
     strategy: "jwt",
