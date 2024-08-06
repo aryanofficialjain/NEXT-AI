@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { useDebounceValue} from "usehooks-ts";
+import { useDebounceCallback } from "usehooks-ts";
 import { useToast } from "@/components/ui/use-toast";
 import { signUpSchema } from "@/schemas/signupSchema";
 import { ApiResponse } from "@/types/ApiResponse";
@@ -21,7 +21,7 @@ function Page() {
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const debouncedUsername = useDebounceValue(username, 400);
+  const debounced = useDebounceCallback(setUsername, 400);
 
   const router = useRouter();
   const { toast } = useToast();
@@ -37,12 +37,13 @@ function Page() {
 
   useEffect(() => {
     const checkUsernameUnique = async () => {
-      if (debouncedUsername) {
+      if (username) {
         setIsCheckingUsername(true);
         setUsernameMessage('');
         try {
-          const response = await axios.get(`/api/check-username-unique?username=${debouncedUsername}`);
-          setUsernameMessage(response.data.message);
+          const response = await axios.get(`/api/check-username-unique?username=${username}`);
+          let message = response.data.message;
+          setUsernameMessage(message);
         } catch (error) {
           setUsernameMessage('Error checking username uniqueness');
         } finally {
@@ -51,7 +52,7 @@ function Page() {
       }
     };
     checkUsernameUnique();
-  }, [debouncedUsername]);
+  }, [username]);
 
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     setIsSubmitting(true);
@@ -90,9 +91,9 @@ function Page() {
               <FormItem>
                 <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input placeholder="shadn" {...field} onChange={(e) => { field.onChange(e); setUsername(e.target.value); }} />
+                  <Input placeholder="shadn" {...field} onChange={(e) => { field.onChange(e); debounced(e.target.value); }} />
                 </FormControl>
-                {isCheckingUsername && <p>Checking username...</p>}
+                {isCheckingUsername && <Loader2 className="animate-spin" />}
                 <FormMessage>{usernameMessage}</FormMessage>
               </FormItem>
             )}
