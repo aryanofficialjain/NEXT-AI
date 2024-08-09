@@ -9,7 +9,8 @@ import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import * as z from "zod";
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage, Input } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
 const Page = () => {
   const router = useRouter();

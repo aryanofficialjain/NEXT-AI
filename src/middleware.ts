@@ -5,8 +5,8 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
   const url = request.nextUrl;
 
-  // Allow access to sign-in and sign-up pages without token
-  if (!token && (url.pathname.startsWith("/sign-in") || url.pathname.startsWith("/sign-up"))) {
+  // Allow access to sign-in, sign-up, and root pages without token
+  if (!token && (url.pathname === "/" || url.pathname.startsWith("/sign-in") || url.pathname.startsWith("/sign-up"))) {
     return NextResponse.next();
   }
 
@@ -25,9 +25,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Redirect to home if no token is found for other pages
+  // Redirect to sign-in if no token is found for other pages
   if (!token) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   // Allow access to other pages with token
@@ -35,5 +35,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/sign-in", "/sign-up", "/", "/dashboard/:path*", "/verify/:path*"],
+  matcher: [
+    "/sign-in",
+    "/sign-up",
+    "/",
+    "/home",
+    "/dashboard/:path*",
+    "/verify/:path*",
+    "/verify", // Ensure the `/verify` path is matched
+  ],
 };
